@@ -104,7 +104,7 @@ if (pe.pNT->Signature != IMAGE_NT_SIGNATURE) return pe;
 ------------------------------------DosHeader-----------------------------------------
 [+]e_magic:0x5a4d
 
-------------------------------------Fileheader----------------------------------------
+------------------------------------FileHeader----------------------------------------
 [+]Machine:0x14c
 [+]NumberOfSections:5
 [+]SizeOfOptionalHeader:0xe0
