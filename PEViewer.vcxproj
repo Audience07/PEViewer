@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\file.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\PEViewer.cpp" />
     <ClCompile Include="src\PEViewer64.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\file.h" />
     <ClInclude Include="include\PEViewer.h" />
     <ClInclude Include="include\PEViewer64.h" />
   </ItemGroup>

@@ -17,8 +17,6 @@ struct PE_CONTEXT {
 //读取文件内存
 PE_CONTEXT LoadFileToMemory(IN LPCSTR str);
 //读取dos头关键字段
-void ReadField(const PE_CONTEXT& pe);
-//判断是否为文件
-BOOL check_path_win(const char* path);
+VOID ReadField(const PE_CONTEXT& pe);
 //将RVA转换为FOA
 DWORD RVAToFOA(PE_CONTEXT pe, DWORD Address);

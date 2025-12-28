@@ -1,4 +1,5 @@
 #include "../include/PEViewer.h"
+#include "../include/file.h"
 
 int main(int argc,char* argv[]) {
 	//╠Да©
