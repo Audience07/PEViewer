@@ -68,11 +68,11 @@ BOOL check_path_win(const char* path) {
 void ReadField(const PE_CONTEXT& pe) {
 	PIMAGE_FILE_HEADER pFileHeader{ &pe.pNT->FileHeader };
 	PIMAGE_OPTIONAL_HEADER32 pPEHeader{ &pe.pNT->OptionalHeader };
-	PIMAGE_SECTION_HEADER pSectionheader{ (PIMAGE_SECTION_HEADER)((BYTE*)pPEHeader + pFileHeader->SizeOfOptionalHeader) };
+	PIMAGE_SECTION_HEADER pSectionTable{ (PIMAGE_SECTION_HEADER)((BYTE*)pPEHeader + pFileHeader->SizeOfOptionalHeader) };
 	//文件头和可选pe头
 	std::cout << "------------------------------------DosHeader-----------------------------------------" << std::endl;
 	std::cout << "[+]e_magic:0x" << std::hex << pe.pDos->e_magic << std::endl;
-	std::cout << "------------------------------------Fileheader----------------------------------------" << std::endl;
+	std::cout << "------------------------------------FileHeader----------------------------------------" << std::endl;
 	std::cout << "[+]Machine:0x" << std::hex << pFileHeader->Machine << std::endl;
 	std::cout << "[+]NumberOfSections:" << pFileHeader->NumberOfSections << std::endl;
 	std::cout << "[+]SizeOfOptionalHeader:0x" << std::hex << pFileHeader->SizeOfOptionalHeader << std::endl;
@@ -86,12 +86,48 @@ void ReadField(const PE_CONTEXT& pe) {
 	//节表
 	std::cout << "------------------------------------SectionTable--------------------------------------" << std::endl;
 	for (int i = 0; i < pFileHeader->NumberOfSections; i++) {
-		std::cout << pSectionheader[i].Name << ":" << std::endl;
-		std::cout <<"[+]PhysicalAddress:0x" << pSectionheader[i].Misc.PhysicalAddress << std::endl;
-		std::cout << "[+]VirtualSize:0x" << pSectionheader[i].Misc.VirtualSize << std::endl;
-		std::cout << "[+]VirtualAddress:0x" << pSectionheader[i].VirtualAddress << std::endl;
-		std::cout << "[+]SizeOfRawData:0x" << pSectionheader[i].SizeOfRawData << std::endl;
-		std::cout << "[+]PointerToRawData:0x" << pSectionheader[i].PointerToRawData << std::endl;
-		std::cout << "[+]Characteristics:0x" << pSectionheader[i].Characteristics << std::endl;
+		std::cout << pSectionTable[i].Name << ":" << std::endl;
+		std::cout <<"[+]PhysicalAddress:0x" << pSectionTable[i].Misc.PhysicalAddress << std::endl;
+		std::cout << "[+]VirtualSize:0x" << pSectionTable[i].Misc.VirtualSize << std::endl;
+		std::cout << "[+]VirtualAddress:0x" << pSectionTable[i].VirtualAddress << std::endl;
+		std::cout << "[+]SizeOfRawData:0x" << pSectionTable[i].SizeOfRawData << std::endl;
+		std::cout << "[+]PointerToRawData:0x" << pSectionTable[i].PointerToRawData << std::endl;
+		std::cout << "[+]Characteristics:0x" << pSectionTable[i].Characteristics << std::endl;
 	}
+}
+
+
+DWORD RVAToFOA(PE_CONTEXT pe,DWORD Address) {
+	PIMAGE_FILE_HEADER pFileHeader{ &pe.pNT->FileHeader };
+	PIMAGE_OPTIONAL_HEADER32 pPEHeader{ &pe.pNT->OptionalHeader };
+	PIMAGE_SECTION_HEADER pSectionTable{ (PIMAGE_SECTION_HEADER)((BYTE*)pPEHeader + pFileHeader->SizeOfOptionalHeader) };
+	
+	//如果地址不在节内返回
+	if (Address <= pPEHeader->SizeOfHeaders) return 0;
+
+	//定位所在节
+	int PointOfSection{-1};
+	DWORD SectionSize{};
+	for (int i{}; i < pFileHeader->NumberOfSections; i++) {
+		//判断节的大小
+		//VirtualSize可能为0
+		if (!pSectionTable[i].Misc.VirtualSize) {
+			SectionSize = pSectionTable[i].SizeOfRawData;
+		}
+		else {
+			SectionSize = pSectionTable[i].Misc.VirtualSize < pSectionTable[i].SizeOfRawData ? pSectionTable[i].Misc.VirtualSize : pSectionTable[i].SizeOfRawData;
+		}
+		if (Address >= pSectionTable[i].VirtualAddress &&
+			Address < pSectionTable[i].VirtualAddress + SectionSize) {
+			PointOfSection = i;
+			break;
+		}
+	}
+	if (PointOfSection == -1) {
+		return 0;
+	}
+	//得到相对位置
+	DWORD OffsetInSection = Address - pSectionTable[PointOfSection].VirtualAddress;
+	//返回FOA
+	return pSectionTable[PointOfSection].PointerToRawData + OffsetInSection;
 }

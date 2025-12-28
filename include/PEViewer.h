@@ -20,3 +20,5 @@ PE_CONTEXT LoadFileToMemory(IN LPCSTR str);
 void ReadField(const PE_CONTEXT& pe);
 //判断是否为文件
 BOOL check_path_win(const char* path);
+//将RVA转换为FOA
+DWORD RVAToFOA(PE_CONTEXT pe, DWORD Address);
