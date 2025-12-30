@@ -39,7 +39,7 @@ PEViewer/
 │   └── main.cpp
 │   └── PEViewer.cpp
 |   └── PEViewer64.cpp   
-|   └──file.h
+|   └──file.cpp
 └── README.md
 ```
 ---
