@@ -33,12 +33,10 @@ PEViewer 可以：
 PEViewer/
 ├── include/
 │   └── PEViewer.h
-|   └── PEViewer64.h
 │   └──file.h
 ├── src/
 │   └── main.cpp
-│   └── PEViewer.cpp
-|   └── PEViewer64.cpp   
+│   └── PEViewer.cpp  
 |   └──file.cpp
 └── README.md
 ```
