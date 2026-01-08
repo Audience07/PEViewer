@@ -72,7 +72,7 @@ VOID ReadField(const PE_CONTEXT& pe) {
 	}
 }
 
-
+//内存地址转外存地址（内存和外存对齐不一样，在内存中相比硬盘有偏差）
 DWORD RVAToFOA(PE_CONTEXT pe,DWORD Address) {
 	PIMAGE_FILE_HEADER pFileHeader{ &pe.pNT->FileHeader };
 	PIMAGE_OPTIONAL_HEADER32 pPEHeader{ &pe.pNT->OptionalHeader };
@@ -106,4 +106,17 @@ DWORD RVAToFOA(PE_CONTEXT pe,DWORD Address) {
 	DWORD OffsetInSection = Address - pSectionTable[PointOfSection].VirtualAddress;
 	//返回FOA
 	return pSectionTable[PointOfSection].PointerToRawData + OffsetInSection;
+}
+
+
+//关闭ALSR地址随机化,只修改内存,还需写入
+BOOL CloseAddressRandomisation(PE_CONTEXT pe) {
+	if ((pe.pNT->Signature!=IMAGE_NT_SIGNATURE)||(pe.pDos->e_magic!=IMAGE_DOS_SIGNATURE)) {
+		std::cout << "[-]确认当前函数是否为PE文件" << std::endl;
+	}
+	pe.pNT->OptionalHeader.DllCharacteristics &= ~IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE;
+	if (pe.pNT->OptionalHeader.DllCharacteristics & IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE) {
+		return FALSE;
+	}
+	return TRUE;
 }

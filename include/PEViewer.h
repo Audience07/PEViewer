@@ -20,3 +20,5 @@ PE_CONTEXT LoadFileToMemory(IN LPCSTR str);
 VOID ReadField(const PE_CONTEXT& pe);
 //将RVA转换为FOA
 DWORD RVAToFOA(PE_CONTEXT pe, DWORD Address);
+//关闭内存随机化
+BOOL CloseAddressRandomisation(PE_CONTEXT pe);
