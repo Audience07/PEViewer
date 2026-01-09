@@ -19,6 +19,8 @@ PE_CONTEXT LoadFileToMemory(IN LPCSTR str);
 //读取dos头关键字段
 VOID ReadField(const PE_CONTEXT& pe);
 //将RVA转换为FOA
-DWORD RVAToFOA(PE_CONTEXT pe, DWORD Address);
+DWORD RVAToFOA(const PE_CONTEXT& pe, DWORD Address);
 //关闭内存随机化
-BOOL CloseAddressRandomisation(PE_CONTEXT pe);
+BOOL CloseAddressRandomisation(const PE_CONTEXT &pe);
+//遍历导入表
+VOID TraversImportTable(const PE_CONTEXT& pe);

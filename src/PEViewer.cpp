@@ -73,45 +73,49 @@ VOID ReadField(const PE_CONTEXT& pe) {
 }
 
 //内存地址转外存地址（内存和外存对齐不一样，在内存中相比硬盘有偏差）
-DWORD RVAToFOA(PE_CONTEXT pe,DWORD Address) {
+DWORD RVAToFOA(const PE_CONTEXT &pe,DWORD Address) {
 	PIMAGE_FILE_HEADER pFileHeader{ &pe.pNT->FileHeader };
 	PIMAGE_OPTIONAL_HEADER32 pPEHeader{ &pe.pNT->OptionalHeader };
 	PIMAGE_SECTION_HEADER pSectionTable{ (PIMAGE_SECTION_HEADER)((BYTE*)pPEHeader + pFileHeader->SizeOfOptionalHeader) };
-	
+	PIMAGE_SECTION_HEADER* ppSectionTable{ (PIMAGE_SECTION_HEADER*)_alloca(sizeof(PIMAGE_SECTION_HEADER*) * pFileHeader->NumberOfSections) };
 	//如果地址不在节内返回
-	if (Address <= pPEHeader->SizeOfHeaders) return 0;
+	if (Address <= pPEHeader->SizeOfHeaders) return Address;
 
 	//定位所在节
 	int PointOfSection{-1};
 	DWORD SectionSize{};
 	for (int i{}; i < pFileHeader->NumberOfSections; i++) {
+		//建立映射关系
+		ppSectionTable[i] = &pSectionTable[i];
 		//判断节的大小
 		//VirtualSize可能为0
-		if (!pSectionTable[i].Misc.VirtualSize) {
-			SectionSize = pSectionTable[i].SizeOfRawData;
+		if (!(ppSectionTable[i]->Misc.VirtualSize)) {
+			SectionSize = ppSectionTable[i]->SizeOfRawData;
 		}
 		else {
-			SectionSize = pSectionTable[i].Misc.VirtualSize < pSectionTable[i].SizeOfRawData ? pSectionTable[i].Misc.VirtualSize : pSectionTable[i].SizeOfRawData;
+			SectionSize = SectionSize = ppSectionTable[i]->Misc.VirtualSize;
 		}
-		if (Address >= pSectionTable[i].VirtualAddress &&
-			Address < pSectionTable[i].VirtualAddress + SectionSize) {
+		
+		if (Address >= ppSectionTable[i]->VirtualAddress &&
+			Address < ppSectionTable[i]->VirtualAddress + SectionSize) {
 			PointOfSection = i;
 			break;
 		}
+		
 	}
-	if (PointOfSection == -1) {
+	if (PointOfSection==-1) {
 		return 0;
 	}
 	//得到相对位置
-	DWORD OffsetInSection = Address - pSectionTable[PointOfSection].VirtualAddress;
+	DWORD OffsetInSection = Address - ppSectionTable[PointOfSection]->VirtualAddress;
 	//返回FOA
-	return pSectionTable[PointOfSection].PointerToRawData + OffsetInSection;
+	return ppSectionTable[PointOfSection]->PointerToRawData + OffsetInSection;
 }
 
 
 //关闭ALSR地址随机化,只修改内存,还需写入
-BOOL CloseAddressRandomisation(PE_CONTEXT pe) {
-	if ((pe.pNT->Signature!=IMAGE_NT_SIGNATURE)||(pe.pDos->e_magic!=IMAGE_DOS_SIGNATURE)) {
+BOOL CloseAddressRandomisation(const PE_CONTEXT& pe) {
+	if (!pe.isVaild) {
 		std::cout << "[-]确认当前函数是否为PE文件" << std::endl;
 	}
 	pe.pNT->OptionalHeader.DllCharacteristics &= ~IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE;
@@ -119,4 +123,20 @@ BOOL CloseAddressRandomisation(PE_CONTEXT pe) {
 		return FALSE;
 	}
 	return TRUE;
+}
+
+//遍历导入表DLL
+VOID TraversImportTable(const PE_CONTEXT& pe) {
+	DWORD ImportSize{ pe.pNT->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size };
+	PIMAGE_IMPORT_DESCRIPTOR ImportTable = (PIMAGE_IMPORT_DESCRIPTOR)((BYTE*)pe.pFileBuffer + RVAToFOA(pe,(DWORD)pe.pNT->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress));
+	int i{};
+	std::cout << "----------------------------------ImportTable---------------------------------------" << std::endl;
+	std::cout << "Name:" << std::endl;
+	
+	while (1) {
+		if (!(RVAToFOA(pe, ImportTable[i].Name))) break;
+		//DLL名称
+		std::cout << "[+]" << (BYTE*)pe.pFileBuffer + RVAToFOA(pe , ImportTable[i].Name) << std::endl;
+		i++;
+	}
 }

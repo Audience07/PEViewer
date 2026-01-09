@@ -21,18 +21,12 @@
     <ClCompile Include="src\PEViewer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\PEViewer64.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\file.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\PEViewer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\PEViewer64.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\file.h">

@@ -10,6 +10,5 @@ int main(int argc,char* argv[]) {
 	//载入内存
 	PE_CONTEXT pe = LoadFileToMemory(path);
 	//读取数据
-	WORD test = CloseAddressRandomisation(pe);
-	std::cout << std::hex << test << std::endl;
+	TraversImportTable(pe);
 }
