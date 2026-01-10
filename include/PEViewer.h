@@ -23,4 +23,4 @@ DWORD RVAToFOA(const PE_CONTEXT& pe, DWORD Address);
 //关闭内存随机化
 BOOL CloseAddressRandomisation(const PE_CONTEXT &pe);
 //遍历导入表
-VOID TraversImportTable(const PE_CONTEXT& pe);
+VOID TraverseImportTable(const PE_CONTEXT& pe);

@@ -126,17 +126,18 @@ BOOL CloseAddressRandomisation(const PE_CONTEXT& pe) {
 }
 
 //遍历导入表DLL
-VOID TraversImportTable(const PE_CONTEXT& pe) {
-	DWORD ImportSize{ pe.pNT->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size };
-	PIMAGE_IMPORT_DESCRIPTOR ImportTable = (PIMAGE_IMPORT_DESCRIPTOR)((BYTE*)pe.pFileBuffer + RVAToFOA(pe,(DWORD)pe.pNT->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress));
+VOID TraverseImportTable(const PE_CONTEXT& pe) {
+	//到如表大小
+	//DWORD pImportSize{ pe.pNT->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size };
+	PIMAGE_IMPORT_DESCRIPTOR pImportTable{(PIMAGE_IMPORT_DESCRIPTOR)((BYTE*)pe.pFileBuffer + RVAToFOA(pe, (DWORD)pe.pNT->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress))};
 	int i{};
 	std::cout << "----------------------------------ImportTable---------------------------------------" << std::endl;
 	std::cout << "Name:" << std::endl;
 	
 	while (1) {
-		if (!(RVAToFOA(pe, ImportTable[i].Name))) break;
+		if (!(RVAToFOA(pe, pImportTable[i].Name))) break;
 		//DLL名称
-		std::cout << "[+]" << (BYTE*)pe.pFileBuffer + RVAToFOA(pe , ImportTable[i].Name) << std::endl;
+		std::cout << "[+]" << (BYTE*)pe.pFileBuffer + RVAToFOA(pe , pImportTable[i].Name) << std::endl;
 		i++;
 	}
 }
